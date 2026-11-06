@@ -1,0 +1,6 @@
+{
+  "name": "NOVA AI",
+  "description": "NOVA AI - Personal Voice AI Assistant and Agent for Android",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

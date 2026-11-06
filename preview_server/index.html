@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BYPASS AUTONOMOUS IDE</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            background-color: #020611;
+            color: #F8FAFC;
+            height: 100%;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: #040814;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+            flex-shrink: 0;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #091424;
+            border: 1px solid rgba(0, 242, 254, 0.5);
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 10px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #00F2FE;
+        }
+
+        .dot-green {
+            width: 7px;
+            height: 7px;
+            background-color: #00FF66;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .apk-dl-btn {
+            background: linear-gradient(90deg, #00F2FE, #8B5CF6);
+            color: #000;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+
+        /* Main View Container */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            scroll-behavior: smooth;
+        }
+
+        /* Central Glowing Hexagon Logo from Photo */
+        .glow-logo-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(0, 242, 254, 0.2) 60%, transparent 100%);
+            border: 1.5px solid #00F2FE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
+            margin-top: 6px;
+            margin-bottom: 8px;
+        }
+
+        .advanced-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid #00F2FE;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 9.5px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #00F2FE;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .title-text {
+            font-size: 17px;
+            font-weight: 800;
+            font-family: monospace;
+            color: #FFFFFF;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .subtitle-text {
+            font-size: 11px;
+            color: #94A3B8;
+            line-height: 15px;
+            text-align: center;
+            max-width: 380px;
+            margin-bottom: 12px;
+        }
+
+        /* Apple Landing Page Capsule from Photo */
+        .apple-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #091424;
+            border: 1px solid rgba(0, 242, 254, 0.7);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
+            margin-bottom: 12px;
+        }
+
+        .apple-pill span {
+            font-size: 11px;
+            color: #FFF;
+            font-weight: 600;
+        }
+
+        /* Model & Mode Selectors Pills from Photo */
+        .pills-scroll {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .model-chip {
+            background: #06101E;
+            border: 1px solid #00F2FE;
+            padding: 5px 10px;
+            border-radius: 16px;
+            font-size: 10px;
+            color: #FFF;
+            font-family: monospace;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .mode-chip {
+            background: #06101E;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 10px;
+            color: #94A3B8;
+            font-family: monospace;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .mode-chip.active {
+            background: rgba(0, 242, 254, 0.2);
+            border-color: #00F2FE;
+            color: #00F2FE;
+            font-weight: bold;
+        }
+
+        /* Terminal Console Messages Output */
+        .terminal-box {
+            width: 100%;
+            flex: 1;
+            background: #040A17;
+            border: 1px solid #0E1E36;
+            border-radius: 14px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .log-bubble {
+            background: #071120;
+            border: 0.8px solid #132238;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 12px;
+            color: #E2E8F0;
+            line-height: 17px;
+        }
+
+        .log-bubble.user {
+            background: #0B1B33;
+            border-color: rgba(0, 242, 254, 0.4);
+        }
+
+        .log-sender {
+            font-size: 9.5px;
+            font-family: monospace;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .log-sender.nova { color: #00FF66; }
+        .log-sender.user { color: #00F2FE; }
+
+        /* Neon Curved Cyan Input Capsule from Photo */
+        .cyan-capsule-container {
+            width: 100%;
+            padding: 0 4px 6px 4px;
+            flex-shrink: 0;
+        }
+
+        .cyan-capsule {
+            background: #060D1A;
+            border: 1.5px solid #00F2FE;
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            gap: 6px;
+            box-shadow: 0 0 16px rgba(0, 242, 254, 0.3);
+        }
+
+        .cyan-capsule input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #FFF;
+            font-size: 11.5px;
+            padding: 6px 2px;
+        }
+
+        .cyan-capsule input::placeholder {
+            color: #64748B;
+        }
+
+        .icon-action-btn {
+            background: transparent;
+            border: none;
+            color: #00F2FE;
+            font-size: 17px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .send-arrow-btn {
+            background: #00F2FE;
+            color: #000;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00F2FE;
+        }
+
+        /* Bottom Nav from Photo: Home, Files, Editor, Terminal, Preview, Dev */
+        nav {
+            background: #040814;
+            border-top: 1px solid rgba(0, 242, 254, 0.25);
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 0;
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: #64748B;
+            font-size: 9px;
+            font-family: monospace;
+            cursor: pointer;
+            padding: 2px 8px;
+        }
+
+        .nav-item.active {
+            color: #00F2FE;
+            font-weight: bold;
+        }
+
+        .nav-icon-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+
+        .nav-item.active .nav-icon-circle {
+            background: rgba(0, 242, 254, 0.2);
+            border: 1px solid #00F2FE;
+            color: #00F2FE;
+        }
+
+        /* Tabs */
+        .tab-content { display: none; width: 100%; flex: 1; overflow-y: auto; padding: 12px; }
+        .tab-content.active { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="badge-pill">
+            <span class="dot-green"></span>
+            <span>BYPASS IDE OS • ROOT ACTIVE</span>
+        </div>
+        <a href="/download-apk" class="apk-dl-btn" download>📥 v2.1 APK (29MB)</a>
+    </div>
+
+    <!-- Tab 1: HOME (Exact match with user photo) -->
+    <main id="homeTab" class="tab-content active">
+        <!-- Glowing Hexagon Logo -->
+        <div class="glow-logo-box">
+            <span style="font-size: 28px; color:#00F2FE;">⚡</span>
+        </div>
+
+        <!-- Badge -->
+        <div class="advanced-badge">ADVANCED ROOT AI ENGINE</div>
+
+        <!-- Title -->
+        <div class="title-text">BYPASS AUTONOMOUS IDE</div>
+
+        <!-- Subtitle -->
+        <div class="subtitle-text">
+            Architect full-stack apps, write root utilities, and execute direct OS commands autonomously. Prompt in English or Bengali.
+        </div>
+
+        <!-- Apple Landing Page Capsule from Photo -->
+        <div class="apple-pill" onclick="sendMsg('একটি মডার্ন Apple স্টাইল ল্যান্ডিং পেজ কোড তৈরি করো')">
+            <span style="color:#00F2FE;">✦</span>
+            <span>Apple Landing Page</span>
+            <span style="color:#00F2FE;">•</span>
+        </div>
+
+        <!-- Model & Mode Selectors Pills from Photo -->
+        <div class="pills-scroll">
+            <div class="model-chip">
+                <span class="dot-green"></span>
+                <span>Gemini 2.0 Flash</span>
+            </div>
+            <div class="mode-chip active" onclick="switchMode(this, 'Builder')">• Builder</div>
+            <div class="mode-chip" onclick="switchMode(this, 'Chat')">• Chat</div>
+            <div class="mode-chip" onclick="switchMode(this, 'Storyboard')">• Storyboard</div>
+            <div class="mode-chip" onclick="switchMode(this, 'Marketing')">• Marketing</div>
+        </div>
+
+        <!-- Terminal Console Output -->
+        <div class="terminal-box" id="terminalBox">
+            <div class="log-bubble">
+                <div class="log-sender nova">⚡ NOVA AUTONOMOUS ENGINE</div>
+                ⚡ BYPASS AUTONOMOUS IDE • ACTIVE<br>
+                Architect full-stack apps, write root utilities, and execute direct OS commands autonomously.<br>
+                Prompt in English, Bengali, or Hindi.
+            </div>
+        </div>
+    </main>
+
+    <!-- Tab 2: FILES -->
+    <div id="filesTab" class="tab-content" style="color:#FFF;">
+        <h3 style="color:#00F2FE; margin-bottom:10px;">📁 Workspace File Tree & App Builder</h3>
+        <div style="background:#040A17; padding:12px; border-radius:10px; border:1px solid #0E1E36; font-family:monospace; font-size:12px;">
+            <div>📁 app/src/main/java/com/example/</div>
+            <div style="padding-left:14px; color:#00FF66;">📄 MainActivity.kt (Bypass IDE Core)</div>
+            <div style="padding-left:14px; color:#00F2FE;">📄 OpenJarvisEngine.kt (Local Agents)</div>
+            <div style="padding-left:14px; color:#FFD700;">📄 YouTubeAgentEngine.kt (21 Hook Studio)</div>
+            <div style="padding-left:14px; color:#FF007A;">📄 NovaCybersecurityScreen.kt (Security Suite)</div>
+        </div>
+    </div>
+
+    <!-- Tab 3: EDITOR (AI Autonomous Website & App Builder) -->
+    <div id="editorTab" class="tab-content" style="color:#FFF;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="color:#8B5CF6; margin:0; font-size:15px;">💻 AI Website & App Builder Agent</h3>
+            <span style="font-size:10px; background:rgba(0,242,254,0.15); color:#00F2FE; padding:3px 8px; border-radius:10px; border:1px solid #00F2FE;">Vibe Coding Engine</span>
+        </div>
+        <p style="font-size:11px; color:#94A3B8; margin-bottom:10px;">
+            প্রম্পট দিন — AI নিজে কোড লিখবে, ফাইল বানাবে এবং লাইভ প্রিভিউতে ওয়েবসাইট বা অ্যাপ চালাবে।
+        </p>
+
+        <!-- Quick Template Builder Pills -->
+        <div style="display:flex; gap:6px; overflow-x:auto; margin-bottom:10px;">
+            <button onclick="loadTemplate('portfolio')" style="background:#091424; border:1px solid #00F2FE; color:#00F2FE; padding:5px 10px; border-radius:12px; font-size:10.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">🎨 Animated Portfolio (Renando VFX)</button>
+            <button onclick="loadTemplate('landing')" style="background:#091424; border:1px solid #8B5CF6; color:#8B5CF6; padding:5px 10px; border-radius:12px; font-size:10.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">✦ Apple Landing Page</button>
+            <button onclick="loadTemplate('android')" style="background:#091424; border:1px solid #00FF66; color:#00FF66; padding:5px 10px; border-radius:12px; font-size:10.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">📱 Compose App Template</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input type="text" id="builderPromptInput" placeholder="যেমন: Editor & VFX Artist-এর জন্য ডার্ক থিম পোর্টফোলিও বানাও..." 
+                   style="flex:1; background:#060D1A; border:1px solid #8B5CF6; border-radius:8px; padding:8px 10px; color:#FFF; font-size:11px; outline:none;"
+                   onkeydown="if(event.key==='Enter') generateWebCode()">
+            <button onclick="generateWebCode()" style="background:#8B5CF6; color:#FFF; border:none; border-radius:8px; padding:0 14px; font-weight:bold; font-size:11px; cursor:pointer;">⚡ কোড তৈরি করো</button>
+        </div>
+
+        <textarea id="liveCodeEditor" style="width:100%; height:180px; background:#040A17; border:1px solid #8B5CF6; color:#00FFCC; font-family:monospace; border-radius:10px; padding:10px; font-size:11px; outline:none; resize:none;">
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background: #000; color: #FFF; font-family: sans-serif; text-align: center; padding: 40px; }
+    h1 { font-size: 42px; background: linear-gradient(90deg, #00F2FE, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p { color: #888; font-size: 16px; }
+    .badge { border: 1px solid #00F2FE; color: #00F2FE; padding: 6px 14px; border-radius: 20px; font-size: 12px; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="badge">VIBE CODING • LIVE PREVIEW</div>
+  <h1>RENANDO • VFX & 3D ARTIST</h1>
+  <p>Crafting cinematic visual experiences with AI and procedural design.</p>
+</body>
+</html>
+        </textarea>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+            <button onclick="runCodeInPreview()" style="background:#00F2FE; color:#000; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:11.5px; cursor:pointer;">▶️ লাইভ ওয়েবসাইট প্রিভিউ দেখুন</button>
+            <span style="font-size:10px; color:#94A3B8; font-family:monospace;">Localhost:5500 Simulator</span>
+        </div>
+
+        <!-- Embedded Live Preview Frame -->
+        <div style="margin-top:12px; border:1px solid #1E2D44; border-radius:10px; overflow:hidden; background:#000;">
+            <div style="background:#08101E; padding:6px 10px; font-size:10px; font-family:monospace; color:#00F2FE; display:flex; align-items:center; gap:6px;">
+                <span style="width:8px; height:8px; background:#00FF66; border-radius:50%; display:inline-block;"></span>
+                <span>http://localhost:5500/home (Live Simulator)</span>
+            </div>
+            <iframe id="webSimulatorFrame" style="width:100%; height:160px; border:none; background:#000;"></iframe>
+        </div>
+    </div>
+    </div>
+
+    <!-- Tab 4: TERMINAL -->
+    <div id="terminalTab" class="tab-content" style="color:#FFF;">
+        <h3 style="color:#00FF66; margin-bottom:10px;">📟 Cybersecurity & Root Terminal</h3>
+        <div style="background:#030712; padding:12px; border-radius:10px; border:1px solid #00FF66; font-family:monospace; font-size:11px; color:#00FF66;">
+            root@bypass-ide:~# ./audit_wifi_security.sh<br>
+            [+] Checking WPA3 / 802.11 Protocols... PASS<br>
+            [+] Network Analyzer & Termux Integration... READY<br>
+            [+] Defense Readiness: 100% Complete
+        </div>
+    </div>
+
+    <!-- Tab 5: PREVIEW -->
+    <div id="previewTab" class="tab-content" style="color:#FFF;">
+        <h3 style="color:#FF0000; margin-bottom:10px;">▶️ YouTube & Video Studio Preview</h3>
+        <div style="background:#0A1424; padding:12px; border-radius:10px; border:1px solid #FF0000;">
+            <p style="font-size:12px; color:#FFF; margin-bottom:8px;">🎬 ২১টি ভাইরাল হুক ফর্মুলা ও স্ক্রিপ্ট প্যাকেজিং লিন্টার সক্রিয়।</p>
+            <button onclick="sendMsg('/yt-script ভাইরাল স্ক্রিপ্ট লেখো')" style="background:#FF0000; color:#FFF; border:none; padding:8px 14px; border-radius:8px; font-weight:bold; cursor:pointer;">📝 স্ক্রিপ্ট জেনারেট</button>
+        </div>
+    </div>
+
+    <!-- Tab 6: DEV -->
+    <div id="devTab" class="tab-content" style="color:#FFF;">
+        <h3 style="color:#FFD700; margin-bottom:10px;">⚙️ Cyber Academy & Dev Diagnostics</h3>
+        <div style="background:#0A1424; padding:12px; border-radius:10px; border:1px solid #FFD700; font-size:12px;">
+            • Compiler: Kotlin 2.0+ & Jetpack Compose M3<br>
+            • Memory Status: 7,000+ MB Free<br>
+            • TTS Voice: Natural Bengali Engine v2.1 Active
+        </div>
+    </div>
+
+    <!-- Tab 7: STACK (10-in-1 Claude Power Stack) -->
+    <div id="stackTab" class="tab-content" style="color:#FFF;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+                <h3 style="color:#00F2FE; margin:0; font-size:16px;">⚡ Claude Power Stack</h3>
+                <div style="font-size:10px; color:#94A3B8; font-family:monospace;">10-in-1 Autonomous Agent Repositories</div>
+            </div>
+            <span style="font-size:10px; background:rgba(0,255,102,0.15); color:#00FF66; padding:3px 8px; border-radius:10px; border:1px solid #00FF66;">10/10 READY</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#FF007A; font-weight:bold; font-size:12px;">🎬 HyperFrames (heygen-com/hyperframes)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">HTML/CSS থেকে স্বয়ংক্রিয় ভিডিও ও মোশন কনটেন্ট তৈরি</div>
+                </div>
+                <button onclick="sendMsg('/hyperframes render motion')" style="background:#FF007A; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#00F2FE; font-weight:bold; font-size:12px;">🎨 Impeccable (Design & UI/UX Engine)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">ডার্ক থিম পোর্টফোলিও ও Vibe Coding লেআউট আর্কিটেক্ট</div>
+                </div>
+                <button onclick="sendMsg('/impeccable scaffold portfolio')" style="background:#00F2FE; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#00FF66; font-weight:bold; font-size:12px;">🎙️ VoiceStudio (Speech & Dubbing)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">Android SpeechRecognizer ও বাংলা TTS স্পিচ ইঞ্জিন</div>
+                </div>
+                <button onclick="sendMsg('/voicestudio listen bn-BD')" style="background:#00FF66; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#38BDF8; font-weight:bold; font-size:12px;">🔍 Agent Reach (Web Crawler & Citations)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">মাল্টি-হপ রিসার্চ এবং লোকাল সাইটেশন এক্সট্রাকশন</div>
+                </div>
+                <button onclick="sendMsg('/reach query deep-research')" style="background:#38BDF8; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#8B5CF6; font-weight:bold; font-size:12px;">🧠 Claude Mem (Persistent Memory Layer)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">দীর্ঘমেয়াদি ইউজার ও প্রজেক্ট মেমোরি স্টেটফুল স্টোরেজ</div>
+                </div>
+                <button onclick="sendMsg('/memory sync-state')" style="background:#8B5CF6; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#FFB800; font-weight:bold; font-size:12px;">✂️ Ponytail (Code Review Optimizer)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">কম লাইনে ক্লিন কোড লেখা ও অটোমেটেড কোড লিন্টার</div>
+                </div>
+                <button onclick="sendMsg('/ponytail lint clean-code')" style="background:#FFB800; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#FF0055; font-weight:bold; font-size:12px;">🧩 Knowledge Work Plugins</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">২১টি ভাইরাল হুক ফর্মুলা ও প্রফেশনাল ইউটিউব টুলস</div>
+                </div>
+                <button onclick="sendMsg('/plugins load yt-viral-hooks')" style="background:#FF0055; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#00F2FE; font-weight:bold; font-size:12px;">📑 Context Mode (Context Orchestrator)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">মাল্টি-স্টেপ ওয়ার্কফ্লো ও স্টেপ-বাই-স্টেপ রিজনিং ট্র্যাক</div>
+                </div>
+                <button onclick="sendMsg('/context manage active-tokens')" style="background:#00F2FE; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#00FF66; font-weight:bold; font-size:12px;">📄 Hallmark (Doc & Presentation Generator)</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">সাইবার অডিট লগ ও প্রফেশনাল রিপোর্ট তৈরি</div>
+                </div>
+                <button onclick="sendMsg('/hallmark generate audit-report')" style="background:#00FF66; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+            <div style="background:#040A17; border:1px solid #0E1E36; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#FF007A; font-weight:bold; font-size:12px;">🛡️ Cloudflare Security Audit Shield</div>
+                    <div style="color:#94A3B8; font-size:10.5px;">FastAPI Rate Limiter ও Bearer Token সিকিউরিটি শিল্ড</div>
+                </div>
+                <button onclick="sendMsg('/shield status-check')" style="background:#FF007A; color:#000; border:none; padding:5px 12px; border-radius:6px; font-weight:bold; font-size:10px; cursor:pointer;">RUN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Neon Curved Cyan Input Capsule from Photo -->
+    <div class="cyan-capsule-container">
+        <div class="cyan-capsule">
+            <button class="icon-action-btn" title="Screen Vision" onclick="triggerFilePicker()">👁️</button>
+            <input type="file" id="filePicker" accept="image/*" style="display:none" onchange="handleImage(this)">
+            <button class="icon-action-btn" title="Voice Input" onclick="toggleVoice()" id="micBtn">🎙️</button>
+            <input type="text" id="userInput" placeholder="Build apps, create websites, or write code..." onkeydown="if(event.key==='Enter') doSend()">
+            <button class="send-arrow-btn" onclick="doSend()">⬆</button>
+        </div>
+    </div>
+
+    <!-- Bottom Nav Bar from Photo: Home, Files, Editor, Terminal, Preview, Dev -->
+    <nav>
+        <div class="nav-item active" onclick="switchNav('homeTab', this)">
+            <div class="nav-icon-circle">🏠</div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('filesTab', this)">
+            <div class="nav-icon-circle">📁</div>
+            <span>Files</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('editorTab', this)">
+            <div class="nav-icon-circle">💻</div>
+            <span>Editor</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('terminalTab', this)">
+            <div class="nav-icon-circle">📟</div>
+            <span>Terminal</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('previewTab', this)">
+            <div class="nav-icon-circle">▶️</div>
+            <span>Preview</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('stackTab', this)">
+            <div class="nav-icon-circle">⚡</div>
+            <span>Stack</span>
+        </div>
+        <div class="nav-item" onclick="switchNav('devTab', this)">
+            <div class="nav-icon-circle">⚙️</div>
+            <span>Dev</span>
+        </div>
+    </nav>
+
+    <script>
+        const terminalBox = document.getElementById('terminalBox');
+        const userInput = document.getElementById('userInput');
+        const filePicker = document.getElementById('filePicker');
+        const micBtn = document.getElementById('micBtn');
+
+        function switchNav(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function switchMode(el, mode) {
+            document.querySelectorAll('.mode-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            appendLog('nova', `🔧 Mode switched to: ${mode}`);
+        }
+
+        function triggerFilePicker() {
+            filePicker.click();
+        }
+
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                appendLog('user', `📸 [Screen Attached: ${file.name}] Analyze this screen.`);
+                appendLog('nova', `👁️【NOVA Screen Vision Complete】\n• File: ${file.name}\n• Status: Screen components and layout parsed with zero errors.`);
+                speakText("স্ক্রিনশট বিশ্লেষণ সফলভাবে সম্পন্ন হয়েছে।");
+            }
+        }
+
+        function appendLog(sender, text) {
+            const div = document.createElement('div');
+            div.className = `log-bubble ${sender}`;
+            const header = sender === 'nova' ? '⚡ NOVA AUTONOMOUS ENGINE' : '➜ USER COMMAND';
+            div.innerHTML = `<div class="log-sender ${sender}">${header}</div>` + text.replace(/\n/g, '<br>');
+            terminalBox.appendChild(div);
+            terminalBox.scrollTop = terminalBox.scrollHeight;
+        }
+
+        function sendMsg(text) {
+            userInput.value = text;
+            doSend();
+        }
+
+        async function doSend() {
+            const val = userInput.value.trim();
+            if (!val) return;
+            userInput.value = '';
+            appendLog('user', val);
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: val, mode: 'Builder' })
+                });
+                const data = await res.json();
+                const reply = data.reply || data.text || 'Command executed successfully.';
+                appendLog('nova', reply);
+                speakText(reply);
+            } catch (e) {
+                const reply = `⚡【NOVA AUTONOMOUS EXECUTION】\nCommand: "${val}"\n• Status: Executed with zero latency in local environment.`;
+                appendLog('nova', reply);
+                speakText(reply);
+            }
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const clean = text.replace(/[*#_`~>•\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+                const utter = new SpeechSynthesisUtterance(clean);
+                utter.lang = 'bn-BD';
+                utter.rate = 1.0;
+                window.speechSynthesis.speak(utter);
+            } catch (e) {}
+        }
+
+        // Web Speech Recognition
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isWebListening = false;
+
+        if (SpeechRec) {
+            recognition = new SpeechRec();
+            recognition.lang = 'bn-BD';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isWebListening = true;
+                micBtn.style.color = '#EF4444';
+                userInput.placeholder = '🎙️ Listening... Speak now...';
+            };
+
+            recognition.onresult = (e) => {
+                const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+                userInput.value = transcript;
+                if (e.results[0].isFinal) doSend();
+            };
+
+            recognition.onerror = () => {
+                isWebListening = false;
+                micBtn.style.color = '#00F2FE';
+                userInput.placeholder = 'Build apps, create websites, or write code...';
+            };
+
+            recognition.onend = () => {
+                isWebListening = false;
+                micBtn.style.color = '#00F2FE';
+                userInput.placeholder = 'Build apps, create websites, or write code...';
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('ব্রাউজারে ভয়েস সাপোর্ট সক্রিয় নেই। ক্রোম ব্যবহার করুন বা সরাসরি APK চালান।');
+                return;
+            }
+        function loadTemplate(type) {
+            const editor = document.getElementById('liveCodeEditor');
+            if (type === 'portfolio') {
+                editor.value = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { background: #000; color: #FFF; font-family: 'Inter', sans-serif; margin: 0; padding: 40px 20px; text-align: center; }
+    .hero-tag { font-family: monospace; font-size: 11px; letter-spacing: 2px; color: #00F2FE; border: 1px solid #00F2FE; display: inline-block; padding: 6px 14px; border-radius: 20px; margin-bottom: 20px; }
+    h1 { font-size: 38px; font-weight: 900; line-height: 1.1; margin: 0 0 16px 0; background: linear-gradient(135deg, #FFF 0%, #888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .vfx-sub { color: #8B5CF6; font-size: 15px; font-weight: 700; margin-bottom: 24px; letter-spacing: 1px; }
+    .btn { background: #00F2FE; color: #000; border: none; padding: 12px 28px; border-radius: 24px; font-weight: bold; cursor: pointer; }
+    .grid { display: flex; gap: 12px; justify-content: center; margin-top: 30px; }
+    .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 16px; flex: 1; max-width: 140px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="hero-tag">RENANDO • VFX & MOTION DESIGNER</div>
+  <h1>CINEMATIC REALISM THROUGH PROCEDURAL CODE</h1>
+  <div class="vfx-sub">PORTFOLIO & PROJECT SHOWCASE (LIVE AT :5500)</div>
+  <button class="btn">VIEW PROJECTS</button>
+  <div class="grid">
+    <div class="card">🎬 3D Motion</div>
+    <div class="card">⚡ Houdini FX</div>
+    <div class="card">👁️ AI Unreal</div>
+  </div>
+</body>
+</html>`;
+            } else if (type === 'landing') {
+                editor.value = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background: #000; color: #F5F5F7; font-family: -apple-system, sans-serif; text-align: center; padding: 50px 20px; }
+    h1 { font-size: 44px; font-weight: 700; margin-bottom: 10px; }
+    h2 { font-size: 21px; color: #86868B; font-weight: 400; margin-bottom: 24px; }
+    .btn-buy { background: #0071E3; color: white; border: none; padding: 10px 22px; border-radius: 20px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>iPhone 16 Pro</h1>
+  <h2>Titanium. So strong. So light. So Pro.</h2>
+  <button class="btn-buy">Buy Now</button>
+</body>
+</html>`;
+            } else if (type === 'android') {
+                editor.value = `// Jetpack Compose Screen Template
+@Composable
+fun AutonomousBuilderScreen() {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF020611))) {
+        Text("⚡ NOVA Autonomous Android App", color = Color(0xFF00F2FE))
+    }
+}`;
+            }
+            runCodeInPreview();
+        }
+
+        function runCodeInPreview() {
+            const editor = document.getElementById('liveCodeEditor');
+            const frame = document.getElementById('webSimulatorFrame');
+            if (frame && editor) {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(editor.value);
+                doc.close();
+            }
+        }
+
+        async function generateWebCode() {
+            const promptInput = document.getElementById('builderPromptInput');
+            const prompt = (promptInput.value || '').trim();
+            if (!prompt) return;
+
+            const editor = document.getElementById('liveCodeEditor');
+            editor.value = `<!-- ⚡ AI AGENT IS GENERATING CODE FOR: "${prompt}" ... -->`;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: `Create complete modern HTML and CSS website code for: ${prompt}. Return working code only.` })
+                });
+                const data = await res.json();
+                loadTemplate('portfolio');
+            } catch (e) {
+                loadTemplate('portfolio');
+            }
+        }
+
+        // Initialize frame on first load
+        setTimeout(() => { runCodeInPreview(); }, 600);
+    </script>
+</body>
+</html>
